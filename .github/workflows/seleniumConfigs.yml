@@ -68,19 +68,13 @@ jobs:
           fi
           mvn --batch-mode test "-DsuiteFile=${{ inputs.test_config }}"
 
-      - name: Upload all recording .mp4 files
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ inputs.test_name }} - MP4 Files
-          path: '**/*.mp4'
-
       - name: Upload Test Report
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.test_name }} - Test Reports
+          name: Test Reports - ${{ inputs.test_name }}
           path: |
+            **/*.mp4
             **/html/index.html
             **/reportng.css
             **/reportng.js
