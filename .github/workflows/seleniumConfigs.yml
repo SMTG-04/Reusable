@@ -1,0 +1,92 @@
+name: Selenium workflow
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: false
+        type: string
+      test_config:
+        required: true
+        type: string
+      test_name:
+        required: true
+        type: string
+      branch_name:
+        required: false
+        type: string
+
+jobs:
+  Selenium-Job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact
+        if: ${{ inputs.artifact != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact}}
+          path: CheckoutFolder
+
+      - name: Switch to another branch
+        if: ${{ inputs.artifact != '' }}
+        run: |
+          cd CheckoutFolder
+          git checkout ${{ inputs.branch_name }}
+
+      - name: Checkout code
+        if: ${{ inputs.artifact == '' }}
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '22'
+          distribution: 'adopt'
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-ubuntu
+          restore-keys: |
+            ${{ runner.os }}-maven-ubuntu
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ inputs.artifact }}" != "" ]; then
+            cd CheckoutFolder
+          fi
+          mvn install -DskipTests
+
+      - name: Run tests
+        run: |
+          if [ "${{ inputs.artifact }}" != "" ]; then
+            cd CheckoutFolder
+          fi
+          mvn --batch-mode test "-DsuiteFile=${{ inputs.test_config }}"
+
+      - name: Upload all recording .mp4 files
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.test_name }} - MP4 Files
+          path: '**/*.mp4'
+
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.test_name }} - Test Reports
+          path: |
+            **/html/index.html
+            **/reportng.css
+            **/reportng.js
+            **/suite*_test*_results.html
+
+      - name: Remove cloned repo
+        if: ${{ inputs.artifact != '' }}
+        run: |
+          rm -r CheckoutFolder

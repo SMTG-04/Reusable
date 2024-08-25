@@ -1,0 +1,71 @@
+name: Clone GitLab Workflow
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        required: true
+        type: string
+    secrets:
+      VPN_USERNAME:
+        required: true
+      VPN_PASSWORD:
+        required: true
+      GIT_REPO:
+        required: true
+
+jobs:
+  Clone-Git:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Check out reusable workflow repository
+        uses: actions/checkout@v3
+        with:
+          repository: SMTG-04/Reusable
+          path: reusable-repo
+
+      - name: Install OpenVPN
+        run: |
+          sudo apt update -y
+          sudo apt install -y openvpn
+
+      - name: Create VPN Credentials File
+        run: |
+          echo "${{ secrets.VPN_USERNAME }}" > $HOME/author.txt
+          echo "${{ secrets.VPN_PASSWORD }}" >> $HOME/author.txt
+          chmod 600 $HOME/author.txt
+
+      - name: Start OpenVPN
+        run: |
+          cd reusable-repo
+          sudo nohup openvpn --verb 4 --config .github/client.ovpn --auth-user-pass $HOME/author.txt > $HOME/openvpn.log 2>&1 &
+
+      - name: Try connect to Gitlab by VPN
+        run: |
+          for i in {1..5}; do
+           echo "$(curl -Is ${{ secrets.GIT_REPO }} | head -1)"
+           if grep -q "Initialization Sequence Completed" $HOME/openvpn.log; then
+             echo "OpenVPN started successfully."
+             break
+           fi
+           echo "OpenVPN start failed, retrying..."
+          done
+          cat $HOME/openvpn.log
+
+      - name: Clone GitLab repository
+        run: |
+          git clone ${{ secrets.GIT_REPO }} CheckoutFolder
+
+      - name: Stop OpenVPN
+        run: |
+          sudo pkill -f openvpn
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GitCloned
+          path: CheckoutFolder
+
+      - name: Remove cloned repo
+        if: always()
+        run: |
+          rm -r CheckoutFolder
