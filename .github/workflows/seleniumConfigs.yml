@@ -74,6 +74,7 @@ jobs:
         with:
           name: Test Reports - ${{ inputs.test_name }}
           path: |
+            **/BufferLog.log
             **/*.mp4
             **/html/index.html
             **/reportng.css
