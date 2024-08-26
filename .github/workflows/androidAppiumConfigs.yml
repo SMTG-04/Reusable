@@ -151,12 +151,9 @@ jobs:
         with:
           name: Test Reports - ${{ inputs.test_name }}
           path: |
-            **/BufferLog.log
-            **/*.mp4
-            **/html/index.html
-            **/reportng.css
-            **/reportng.js
-            **/suite*_test*_results.html
+            CheckoutFolder/target/BufferLog.log
+            CheckoutFolder/recording_video
+            CheckoutFolder/target/surefire-reports/html
 
       - name: Remove cloned repo
         if: ${{ inputs.artifact != '' }}
