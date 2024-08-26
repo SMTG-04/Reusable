@@ -143,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.test_name }} - Test Reports
+          name: Test Reports - ${{ inputs.test_name }}
           path: |
             **/*.mp4
             **/html/index.html
