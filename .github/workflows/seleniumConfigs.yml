@@ -74,9 +74,9 @@ jobs:
         with:
           name: Test Reports - ${{ inputs.test_name }}
           path: |
-            CheckoutFolder/target/BufferLog.log
+            CheckoutFolder/target/BufferLog.
+            CheckoutFolder/target/ExtentReport.html
             CheckoutFolder/recording_video
-            CheckoutFolder/target/surefire-reports/html
 
       - name: Remove cloned repo
         if: ${{ inputs.artifact != '' }}

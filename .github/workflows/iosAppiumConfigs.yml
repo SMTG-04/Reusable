@@ -48,7 +48,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '21'
 
       - name: Cache Node.js Modules
         uses: actions/cache@v3
@@ -146,8 +146,8 @@ jobs:
           name: Test Reports - ${{ inputs.test_name }}
           path: |
             CheckoutFolder/target/BufferLog.log
+            CheckoutFolder/target/ExtentReport.html
             CheckoutFolder/recording_video
-            CheckoutFolder/target/surefire-reports/html
 
       - name: Remove cloned repo
         if: ${{ inputs.artifact != '' }}

@@ -95,6 +95,7 @@ jobs:
       - name: Check list devices
         run: |
           $ANDROID_HOME/platform-tools/adb devices
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -152,8 +153,8 @@ jobs:
           name: Test Reports - ${{ inputs.test_name }}
           path: |
             CheckoutFolder/target/BufferLog.log
+            CheckoutFolder/target/ExtentReport.html
             CheckoutFolder/recording_video
-            CheckoutFolder/target/surefire-reports/html
 
       - name: Remove cloned repo
         if: ${{ inputs.artifact != '' }}
