@@ -24,33 +24,33 @@ jobs:
 
     steps:
       - name: Check out reusable workflow repository
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         uses: actions/checkout@v3
         with:
           repository: SMTG-04/Reusable
           path: reusable-repo
 
       - name: Install OpenVPN
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           sudo apt update -y
           sudo apt install -y openvpn
 
       - name: Create VPN Credentials File
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           echo "${{ secrets.VPN_USERNAME }}" > $HOME/author.txt
           echo "${{ secrets.VPN_PASSWORD }}" >> $HOME/author.txt
           chmod 600 $HOME/author.txt
 
       - name: Start OpenVPN
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           cd reusable-repo
           sudo nohup openvpn --verb 4 --config .github/client.ovpn --auth-user-pass $HOME/author.txt > $HOME/openvpn.log 2>&1 &
 
       - name: Try connect to Gitlab by VPN
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           for i in {1..5}; do
            echo "$(curl -Is ${{ secrets.GIT_REPO }} | head -1)"
@@ -63,17 +63,17 @@ jobs:
           cat $HOME/openvpn.log
 
       - name: Clone GitLab repository
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           git clone ${{ secrets.GIT_REPO }} CheckoutFolder
 
       - name: Stop OpenVPN
-        if: ${{ secrets.VPN_USERNAME != '' }}
+        if: ${{ inputs.local_repo == '' }}
         run: |
           sudo pkill -f openvpn
 
       - name: Clone Github repository
-        if: ${{ secrets.PAT != '' }}
+        if: ${{ inputs.local_repo == '' }}
         uses: actions/checkout@v3
         with:
           repository: ${{ inputs.local_repo }}
