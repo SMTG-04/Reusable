@@ -72,8 +72,12 @@ jobs:
         run: |
           sudo pkill -f openvpn
 
+#      - name: Create cloned folder for Github
+#        if: ${{ inputs.local_repo != '' }}
+#        run: mkdir -p CheckoutFolder
+
       - name: Clone Github repository
-        if: ${{ inputs.local_repo == '' }}
+        if: ${{ inputs.local_repo != '' }}
         uses: actions/checkout@v3
         with:
           repository: ${{ inputs.local_repo }}
