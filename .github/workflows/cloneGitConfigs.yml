@@ -5,13 +5,18 @@ on:
       artifact:
         required: true
         type: string
+      local_repo:
+        required: false
+        type: string
     secrets:
       VPN_USERNAME:
-        required: true
+        required: false
       VPN_PASSWORD:
-        required: true
+        required: false
       GIT_REPO:
-        required: true
+        required: false
+      PAT:
+        required: false
 
 jobs:
   Clone-Git:
@@ -19,28 +24,33 @@ jobs:
 
     steps:
       - name: Check out reusable workflow repository
+        if: ${{ secrets.VPN_USERNAME != '' }}
         uses: actions/checkout@v3
         with:
           repository: SMTG-04/Reusable
           path: reusable-repo
 
       - name: Install OpenVPN
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           sudo apt update -y
           sudo apt install -y openvpn
 
       - name: Create VPN Credentials File
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           echo "${{ secrets.VPN_USERNAME }}" > $HOME/author.txt
           echo "${{ secrets.VPN_PASSWORD }}" >> $HOME/author.txt
           chmod 600 $HOME/author.txt
 
       - name: Start OpenVPN
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           cd reusable-repo
           sudo nohup openvpn --verb 4 --config .github/client.ovpn --auth-user-pass $HOME/author.txt > $HOME/openvpn.log 2>&1 &
 
       - name: Try connect to Gitlab by VPN
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           for i in {1..5}; do
            echo "$(curl -Is ${{ secrets.GIT_REPO }} | head -1)"
@@ -53,12 +63,22 @@ jobs:
           cat $HOME/openvpn.log
 
       - name: Clone GitLab repository
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           git clone ${{ secrets.GIT_REPO }} CheckoutFolder
 
       - name: Stop OpenVPN
+        if: ${{ secrets.VPN_USERNAME != '' }}
         run: |
           sudo pkill -f openvpn
+
+      - name: Clone Github repository
+        if: ${{ inputs.VPN_USERNAME != '' }}
+        uses: actions/checkout@v3
+        with:
+          repository: local_repo
+          token: ${{ secrets.PAT }}
+          path: reusable-repo
 
       - uses: actions/upload-artifact@v4
         with:
