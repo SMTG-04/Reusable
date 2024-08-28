@@ -28,7 +28,7 @@ jobs:
           path: CheckoutFolder
 
       - name: Switch to another branch
-        if: ${{ inputs.artifact != '' }}
+        if: ${{ inputs.branch_name != '' }}
         run: |
           cd CheckoutFolder
           git checkout ${{ inputs.branch_name }}
