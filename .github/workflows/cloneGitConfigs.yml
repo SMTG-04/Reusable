@@ -78,7 +78,7 @@ jobs:
         with:
           repository: ${{ inputs.local_repo }}
           token: ${{ secrets.PAT }}
-          path: reusable-repo
+          path: CheckoutFolder
 
       - uses: actions/upload-artifact@v4
         with:
