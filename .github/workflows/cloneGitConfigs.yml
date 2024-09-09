@@ -89,8 +89,3 @@ jobs:
         if: always()
         run: |
           rm -r CheckoutFolder
-
-      - name: Delete clone repository artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: ClonedRepo
